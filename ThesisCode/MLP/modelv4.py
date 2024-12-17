@@ -7,23 +7,27 @@ import os
 from gym_env import RedGymEnv
 import json
 
-init_dict ={
-    "datadim" : 19597, #obs.shape[1]
-    "interdim1" : 2500,
-    "interdim2" : 150,
-    "outdim" : 7,
-    "seed" : 42,
-    "generations": 20,
-    "population_size": 20}
 
-transform = torchvision.transforms.ToTensor()
+configpath = os.path.join(os.path.dirname(__file__), "config.json")
+with open(configpath, 'r') as file:
+    config = json.load(file)
+    
+loading = config.get("loading")
+
+environment = config.get("environment")
+
+environment["init_state"] = os.path.expanduser(environment["init_state"])
+environment["gb_path"] = os.path.expanduser(environment["gb_path"])
+params = config.get("params")
+
+
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-        self.fc1 = nn.Linear(init_dict["datadim"], init_dict["interdim1"])
-        self.fc2 = nn.Linear(init_dict["interdim1"], init_dict["interdim2"])
-        self.fc3 = nn.Linear(init_dict["interdim2"], init_dict["outdim"])
+        self.fc1 = nn.Linear(params["datadim"], params["interdim1"])
+        self.fc2 = nn.Linear(params["interdim1"], params["interdim2"])
+        self.fc3 = nn.Linear(params["interdim2"], params["outdim"])
         
     def forward(self,x):
         # x = x.view(x.size(0),-1)
@@ -119,20 +123,8 @@ def evaluate(env, model):
             input,fitness,finished,_ = env.step(max_index)
             input = prep_obs(input) #adjusts the observation to the required data format
             stepSequence.append(max_index.item())
-    return fitness, stepSequence
+    return fitness, stepSequence, model.seed
 
-
-
-def main():
-    #sets the Seed specified up top and creates an instance of the model
-    init_rn = torch.manual_seed(init_dict["seed"])
-    model = Agent(init_dict["datadim"], init_dict["interdim1"], init_dict["interdim2"], init_dict["outdim"], init_dict["seed"])
-    model.genotype = model.init_genotype()
-    model.phenotype = model.build_phenotype()
-    for i in range (runs):
-        evaluateRun(model)
-        model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item())
-    return
 
 def prep_obs(obs):
     #reshaping and concatentating of different observations
@@ -157,28 +149,19 @@ def eltism_selection(population):
 
 if __name__ == "__main__":
     
-    configpath = os.path.join(os.path.dirname(__file__), "config.json")
-    with open(configpath, 'r') as file:
-        config = json.load(file)
-    
 
-    #UGLY but idk how to fix rn
-
-    config["environment"][0]["init_state"] = os.path.expanduser(config["environment"][0]["init_state"])
-    config["environment"][0]["gb_path"] = os.path.expanduser(config["environment"][0]["gb_path"])
-
-    env = RedGymEnv(config["environment"][0])
+    env = RedGymEnv(environment)
     population = []
     init_seeds = []
-    torch.manual_seed(init_dict["seed"])
+    torch.manual_seed(params["seed"])
     for i in range (10):
         init_seeds.append(torch.randint(-69420, 69420, (1,)).item())
     for i in range (10):
-        model = Agent(init_dict["datadim"], init_dict["interdim1"], init_dict["interdim2"], init_dict["outdim"], init_seeds[i])
+        model = Agent(params["datadim"], params["interdim1"], params["interdim2"], params["outdim"], init_seeds[i])
         model.genotype = model.init_genotype()
         model.phenotype = model.build_phenotype()
         population.append(model)
-    for i in range (init_dict["generations"]):
+    for i in range (params["generations"]):
         for model in population:
             env.reset()
             model.fitness, model.action_sequence = evaluate(env, model)
@@ -188,11 +171,11 @@ if __name__ == "__main__":
         #TODO figure out a good way to make the results replicable, since resetting a global seed would just lead to 
         # using the same string of mutation numbers over and over, but not doing it makes the rn used reliant on the previous global rn set for creating the
         # previous mutation
-        torch.save(elite.phenotype.state_dict(), f"model_weights{i}.pth")
+        torch.save(elite.phenotype.state_dict(), "model_weights_MLP.pth")
         new_population = []
-        for j in range(init_dict["population_size"] -1):
-            model = Agent(init_dict["datadim"], init_dict["interdim1"], init_dict["interdim2"], init_dict["outdim"], seed_sequence = elite.seed, generation = i, genotype=elite.genotype)
-            model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), f"model_weights{i}.pth")
+        for j in range(params["population_size"] -1):
+            model = Agent(params["datadim"], params["interdim1"], params["interdim2"], params["outdim"], seed_sequence = elite.seed, generation = i, genotype=elite.genotype)
+            model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), "model_weights_MLP.pth")
             new_population.append(model)
         new_population.append(elite)
         population = new_population

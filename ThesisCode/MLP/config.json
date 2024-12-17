@@ -1,19 +1,19 @@
 {
-    "loading":[
+    "loading":
         {
         "from scratch": true,
-        "init fiel": "last_model.pth"
+        "init": "last_model.pth"
         }
-    ],
-    "environment":[{
+    ,
+    "environment":{
         "headless": false,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
         "max_steps" : 60,
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb"
-    }],
-    "params": [{
+    },
+    "params": {
         "datadim" : 19597,
         "interdim1" : 2500,
         "interdim2" : 150,
@@ -21,6 +21,6 @@
         "seed" : 42,
         "generations": 20,
         "population_size": 20
-    }]
+    }
 
 }
