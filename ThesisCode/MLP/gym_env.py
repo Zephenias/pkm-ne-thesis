@@ -50,9 +50,9 @@ class RedGymEnv (Env):
             WindowEvent.RELEASE_BUTTON_START
         ]
 
-        with open("events.json") as f:
-            event_names = json.load(f)
-        self.event_names = event_names
+        #with open("events.json") as f:
+        #    event_names = json.load(f)
+        #self.event_names = event_names
 
         self.output_shape = (72, 80, self.frame_stacks) #downsampled screen
         self.coords_pad = 12
@@ -108,10 +108,12 @@ class RedGymEnv (Env):
         self.died_count = 0
         self.party_size = 0
         self.step_count = 0
+        
+        self.fitness = 0
 
         self.max_map_progress = 0
         self.progress_reward = self.get_game_state_reward() #TODO call differently, probably
-        self.total_reward = sum([val for _, val in self.progress_reward.items()])
+        self.total_reward = 0
         self.reset_count +=1
         return self._get_obs(), {}
 
@@ -160,7 +162,7 @@ class RedGymEnv (Env):
 
         self.party_size = self.read_m(0xD163)
 
-        #new_fitness = self.update(fitness) seems wrong to do adaptively, gotta track some other way, than evaluate at the end
+        #self.fitness = self.update(fitness) #seems wrong to do adaptively, gotta track some other way, than evaluate at the end
 
         self.last_health = self.read_hp_fraction()
 
@@ -172,7 +174,10 @@ class RedGymEnv (Env):
 
         self.step_count += 1
 
-        return obs, False, step_limit_reached, {}
+        if step_limit_reached:
+            self.fitness = self.get_game_state_reward()
+
+        return obs, self.fitness, step_limit_reached, {}
 
     def run_action_on_emulator(self,action):
         #press button
@@ -328,13 +333,23 @@ class RedGymEnv (Env):
             return self.essential_map_locations[map_idx]
         else:
             return -1
+
+    def get_current_coord_count_reward(self):
+        x_pos, y_pos, map_n = self.get_game_coords()
+        coord_string = f"x:{x_pos} y:{y_pos} m:{map_n}"
+        if coord_string in self.seen_coords.keys():
+            count = self.seen_coords[coord_string]
+        else:
+            count = 0
+        return 0 if count < 300 else 1        
     
     def get_game_state_reward(self, print_stats=False):
         state_scores= {
-            "level": self.get_levels_sum(),
-            "heal": 0, #TODO
-            "dead" : self.died_count,
-            "badge": self.get_badges(),
-            "explore": len(self.seen_coords),
+            "level": self.get_levels_sum() * 0.3,
+            "heal": self.total_healing_rew * 0.1, #TODO
+            "dead" : self.died_count * -0.1,
+            "badge": self.get_badges()* 0.1,
+            "explore": len(self.seen_coords)* 0.3, 
+            "stuck": self.get_current_coord_count_reward() * -0.1 #not sure if useful
         }
-        return state_scores
+        return sum(state_scores.values())
