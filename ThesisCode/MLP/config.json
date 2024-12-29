@@ -1,8 +1,8 @@
 {
     "loading":
         {
-        "from scratch": true,
-        "init": "last_model.pth"
+        "from scratch": false,
+        "init": "evaluate_phenotype_state.pth"
         }
     ,
     "environment":{
