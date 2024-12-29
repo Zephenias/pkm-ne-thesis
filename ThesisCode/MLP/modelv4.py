@@ -120,9 +120,10 @@ def evaluate(env, model):
         with torch.no_grad():
             output = model.phenotype(input)
             max_value, max_index = torch.max(output, dim=1)
+            stepSequence.append(max_index.item())
             input,fitness,finished,_ = env.step(max_index)
             input = prep_obs(input) #adjusts the observation to the required data format
-            stepSequence.append(max_index.item())
+            
     return fitness, stepSequence, model.seed
 
 
@@ -164,7 +165,8 @@ if __name__ == "__main__":
     for i in range (params["generations"]):
         for model in population:
             env.reset()
-            model.fitness, model.action_sequence = evaluate(env, model)
+            model.fitness, model.action_sequence, newSeed = evaluate(env, model)
+            model.seed.append(newSeed)
         #for model in population:
         #    print(model.fitness, model.action_sequence)
         elite = eltism_selection(population)
@@ -179,6 +181,12 @@ if __name__ == "__main__":
             new_population.append(model)
         new_population.append(elite)
         population = new_population
-        print(population)
-        print(f'Fitness: {elite.fitness}, Generation: {elite.generation}')
+        print(f'Fitness: {elite.fitness}, Generation: {elite.generation}, StepSeq: {elite.action_sequence}')
+    results = {
+        "fitness": elite.fitness,
+        "generation": elite.generation,
+        "action_sequence": elite.action_sequence
+    }
+    with open("outputtest.json", "w") as file:
+        json.dump(results, file)
         
