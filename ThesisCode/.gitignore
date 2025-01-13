@@ -3,3 +3,5 @@ __pycache__
 *.pyc
 MLPdebug.py
 evaluate_model_state.json
+agent_state_gen*
+Documenting
