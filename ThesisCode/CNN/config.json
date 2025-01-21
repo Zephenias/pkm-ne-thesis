@@ -1,0 +1,30 @@
+{
+    "loading":
+        {
+        "from scratch": false,
+        "init": "evaluate_phenotype_state.pth"
+        }
+    ,
+    "environment":{
+        "headless": true,
+        "print_fitness": true,
+        "init_state": "~/rom/PokemonRed.gb.state",
+        "max_steps" : 100,
+        "action_freq": 24,
+        "gb_path": "~/rom/PokemonRed.gb"
+    },
+    "params": {
+        "flat_size" : 5760,
+        "recurr": 80,
+        "no_img_size": 2317,
+        "interdim1" : 4000,
+        "interdim2": 2000,
+        "outdim" : 7,
+        "seed" : 42,
+        "sigma_ub": 1,
+        "sigma_lb": 0.1,
+        "generations": 20,
+        "population_size": 20
+    }
+
+}
