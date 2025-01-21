@@ -21,6 +21,7 @@
         "interdim2": 2000,
         "outdim" : 7,
         "seed" : 42,
+        "use_sigma": true,
         "sigma_ub": 1,
         "sigma_lb": 0.1,
         "generations": 20,

@@ -132,8 +132,11 @@ class Agent():
 
         torch.manual_seed(newRn)
         
-        sigma = 1
-        
+        if params["use_sigma"]:
+            sigma = params["sigma_lb"] + (params["sigma_ub"] - params["sigma_lb"]) * torch.rand(1)
+        else:
+            sigma = 1
+            
         self.seed_sequence.append(newRn)
 
         for i in range (self.phenotype.conv1.weight.shape[0]):
@@ -240,7 +243,7 @@ if __name__ == "__main__":
         elite.phenotype.recurrence = torch.zeros(1,80)
         #checks for significant jumps along the way and saves the new elites so they can be reviewed
         if parent_fitness > 0:
-            if (elite.fitness - parent_fitness)/parent_fitness >= significance:
+            if (elite.fitness > parent_fitness):
                 save(elite)
         parent_fitness = elite.fitness        
         torch.save(elite.phenotype.state_dict(), "model_weights_CNN.pth")
