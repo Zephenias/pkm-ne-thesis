@@ -136,7 +136,7 @@ class Agent():
             sigma = params["sigma_lb"] + (params["sigma_ub"] - params["sigma_lb"]) * torch.rand(1)
         else:
             sigma = 1
-            
+
         self.seed_sequence.append(newRn)
 
         for i in range (self.phenotype.conv1.weight.shape[0]):
@@ -197,7 +197,6 @@ def eltism_selection(population):
     highest_index, highest_individual = max(
         enumerate(population), key=lambda x: x[1].fitness
     )
-    print(f'highest index: {highest_index} fitness:{population[highest_index].fitness}, Old elite fitness?: {population[len(population)-1].fitness}')
     return highest_individual
 
 def save(agent):
@@ -205,9 +204,9 @@ def save(agent):
     #makes directory in case it is not there yet
     os.makedirs("sav", exist_ok=True)
     #saves into directory for less clutter
-    torch.save(model.phenotype.state_dict(), f"sav/CNN_elite_phenotype_gen{agent.generation}_f{agent.fitness}.pth")
+    torch.save(model.phenotype.state_dict(), f"sav/CNN_elite_phenotype_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.pth")
     agent_state = agent.to_state()
-    with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}.json", "w") as file:
+    with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
     return
 
