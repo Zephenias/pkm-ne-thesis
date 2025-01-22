@@ -1,0 +1,31 @@
+{
+    "replay":
+        {
+        "model_path": "sav/CNN_elite_phenotype_gen1_f40.8_sigmaTrue.pth",
+        "json":"CNN_agent_state_gen1_f40.8_sigmaTrue.json"
+        }
+    ,
+    "environment":{
+        "headless": false,
+        "print_fitness": true,
+        "init_state": "~/rom/PokemonRed.gb.state",
+        "max_steps" : 100,
+        "action_freq": 24,
+        "gb_path": "~/rom/PokemonRed.gb"
+    },
+    "params": {
+        "flat_size" : 5760,
+        "recurr": 80,
+        "no_img_size": 2317,
+        "interdim1" : 4000,
+        "interdim2": 2000,
+        "outdim" : 7,
+        "seed" : 42,
+        "use_sigma": true,
+        "sigma_ub": 1,
+        "sigma_lb": 0.1,
+        "generations": 20,
+        "population_size": 20
+    }
+
+}
