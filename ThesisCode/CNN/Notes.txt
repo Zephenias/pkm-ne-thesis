@@ -1,2 +1,8 @@
 running non headless on my own pc for 20 gens with 20 individuals for 100 time steps -> 9:09 minutes
 same config but headless -> 5:45 minutes
+
+same config headless on strunzit -> 11:45 minutes
+
+Goals:
+Parallelization
+Rewrite Model to be able to start from seed sequence as well as from scratch

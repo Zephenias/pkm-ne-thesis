@@ -103,7 +103,12 @@ class Agent():
     def init_genotype(self):
         rng_state = torch.random.get_rng_state()
         torch.manual_seed(self.seed_sequence[0])
-        return [torch.randn(self.interdim1,self.datadim), #weights fc1
+        return [
+        torch.randn(8,3,3,3), # weight kernel conv1
+        torch.randn(8), # bias kernel conv1
+        torch.randn(16, 8, 3, 3), # weight kernel conv2
+        torch.randn(16), #bias kernel conv2 
+        torch.randn(self.interdim1,self.datadim), #weights fc1
         torch.randn(self.interdim1), #bias fc1
         torch.randn(self.interdim2, self.interdim1), #weights fc2
         torch.randn(self.interdim2), #bias fc2
@@ -114,12 +119,16 @@ class Agent():
 
     def build_phenotype(self):
         model = NeuralNetwork()
-        model.fc1.weight.data = self.genotype[0]
-        model.fc1.bias.data = self.genotype[1]
-        model.fc2.weight.data = self.genotype[2]
-        model.fc2.bias.data = self.genotype[3]
-        model.fc3.weight.data = self.genotype[4]
-        model.fc3.bias.data = self.genotype[5]
+        model.conv1.weight.data = self.genotype[0]
+        model.conv1.bias.data = self.genotype[1]
+        model.conv2.weight.data = self.genotype[2]
+        model.conv2.bias.data = self.genotype[3]
+        model.fc1.weight.data = self.genotype[4]
+        model.fc1.bias.data = self.genotype[5]
+        model.fc2.weight.data = self.genotype[6]
+        model.fc2.bias.data = self.genotype[7]
+        model.fc3.weight.data = self.genotype[8]
+        model.fc3.bias.data = self.genotype[9]
         return model
     
     def mutate(self,newRn, state_dict, attributes = None):
@@ -204,7 +213,8 @@ def save(agent):
     #makes directory in case it is not there yet
     os.makedirs("sav", exist_ok=True)
     #saves into directory for less clutter
-    torch.save(model.phenotype.state_dict(), f"sav/CNN_elite_phenotype_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.pth")
+    #no longer required since reconstruction from seed sequence works
+    #torch.save(model.phenotype.state_dict(), f"sav/CNN_elite_phenotype_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.pth")
     agent_state = agent.to_state()
     with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
@@ -241,9 +251,8 @@ if __name__ == "__main__":
         elite = eltism_selection(population)
         elite.phenotype.recurrence = torch.zeros(1,80)
         #checks for significant jumps along the way and saves the new elites so they can be reviewed
-        if parent_fitness > 0:
-            if (elite.fitness > parent_fitness):
-                save(elite)
+        if (elite.fitness > parent_fitness):
+            save(elite)
         parent_fitness = elite.fitness        
         torch.save(elite.phenotype.state_dict(), "model_weights_CNN.pth")
         new_population = []
