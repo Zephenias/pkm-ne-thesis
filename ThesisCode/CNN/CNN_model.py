@@ -208,7 +208,7 @@ def eltism_selection(population):
     )
     return highest_individual
 
-def save(agent):
+def save(agent, fitness_values = None):
     print(agent.seed_sequence)
     #makes directory in case it is not there yet
     os.makedirs("sav", exist_ok=True)
@@ -218,6 +218,9 @@ def save(agent):
     agent_state = agent.to_state()
     with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
+    if fitness_values is not None:
+        with open(f"sav/CNN_fitness_values_by_generation_total_{params['generations']}.json", "w") as file:
+            json.dump(fitness_values, file)
     return
 
 if __name__ == "__main__":
@@ -226,6 +229,7 @@ if __name__ == "__main__":
     env = RedGymEnv(environment)
     population = []
     init_seeds = []
+    fitness_vectors = {}
     parent_fitness = 0
     significance = 0.2
     torch.manual_seed(params["seed"])
@@ -242,12 +246,15 @@ if __name__ == "__main__":
         model.phenotype = model.build_phenotype()
         population.append(model)
     for i in range (params["generations"]):
+        fitness_list = []
         for model in population:
             env.reset()
             model.fitness, model.action_sequence, newSeed = evaluate(env, model)
+            fitness_list.append(model.fitness)
             # model.seed_sequence.append(newSeed)
         #for model in population:
         #    print(model.fitness, model.action_sequence)
+        fitness_vectors[f"Generation{i}"] = fitness_list
         elite = eltism_selection(population)
         elite.phenotype.recurrence = torch.zeros(1,80)
         #checks for significant jumps along the way and saves the new elites so they can be reviewed
@@ -271,7 +278,8 @@ if __name__ == "__main__":
         new_population.append(elite)
         population = new_population
         print(f'Fitness: {elite.fitness}, Generation: {elite.generation}')
-    save(elite)
+    save(elite, fitness_vectors)
+    
     
     # results = {
     #     "fitness": elite.fitness,
