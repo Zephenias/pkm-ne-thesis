@@ -241,7 +241,7 @@ def eltism_selection(population):
     )
     return highest_individual
 
-def save(agent, fitness_values = None):
+def save(agent, fitness_values = None, starting_point = None):
     print(agent.seed_sequence)
     #makes directory in case it is not there yet
     os.makedirs("sav", exist_ok=True)
@@ -252,11 +252,11 @@ def save(agent, fitness_values = None):
         json.dump(agent_state, file)
     if fitness_values is not None:
         metadata = {}
-        metadata['max_steps'] = params['max_steps']
-        metadata['generations'] = params['generations']
-        metadata['population_size'] = params['population_size']
+        metadata["max_steps"] = params["max_steps"]
+        metadata["population_size"] = params["population_size"]
+        metadata["total_generations"] = params["generations"] + starting_point
         fitness_values['metadata'] = metadata
-        with open(f"sav/CNN_fitness_values_by_generation_total_{params['generations']}.json", "w") as file:
+        with open(f"sav/CNN_fitness_values_by_generation_total_{metadata['total_generations']}.json", "w") as file:
             json.dump(fitness_values, file)
     return
 
@@ -333,6 +333,6 @@ if __name__ == "__main__":
         new_population.append(elite)
         population = new_population
         print(f'Fitness: {elite.fitness}, Generation: {elite.generation}')
-    save(elite, fitness_vectors)
+    save(elite, fitness_vectors,starting_point = starting_point)
     
         

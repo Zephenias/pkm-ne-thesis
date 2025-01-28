@@ -7,7 +7,7 @@ with open ("/home/zephenias/ThesisGit/pkm-ne-thesis/ThesisCode/sav/CNN_fitness_v
 averages = []
 min_values = []
 max_values = []
-meta = {"generations": 20, "max_steps": 100, "population_size": 20}
+meta = {"total_generations": 20, "max_steps": 100, "population_size": 20}
 
 def calculate_average(value_list):
     sum_of_values = 0

@@ -5,4 +5,3 @@ same config headless on strunzit -> 11:45 minutes
 
 Goals:
 Parallelization
-Rewrite Model to be able to start from seed sequence as well as from scratch
