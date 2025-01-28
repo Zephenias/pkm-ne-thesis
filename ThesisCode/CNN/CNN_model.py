@@ -8,8 +8,6 @@ from gym_env import RedGymEnv
 import json
 
 
-#torch.use_deterministic_algorithms(True)
-#torch.backends.cudnn.deterministic = True
 configpath = os.path.join(os.path.dirname(__file__), "config.json")
 with open(configpath, 'r') as file:
     config = json.load(file)
@@ -56,7 +54,6 @@ class Agent():
     interdim1: int = None
     interdim2: int = None
     outdim: int = None
-    #basern: int = None
     seed_sequence: list[int] = None
     generation: int = None
 
@@ -176,7 +173,6 @@ class Agent():
             model = NeuralNetwork()
             model.load_state_dict(torch.load(replay["model_path"]))
             self.phenotype = model
-            #torch.load(os.path.join(os.path.dirname(__file__),
         else:
             for seed in seed_sequence:
                         rng_state = torch.random.get_rng_state()
@@ -204,7 +200,6 @@ class Agent():
                         self.phenotype.fc3.weight.data += torch.randn(self.outdim, self.interdim2) * sigma
                         self.phenotype.fc3.bias.data += torch.randn(self.outdim) * sigma
 
-                        # self.generation += 1
 
         return
 
@@ -251,8 +246,7 @@ def save(agent, fitness_values = None):
     #makes directory in case it is not there yet
     os.makedirs("sav", exist_ok=True)
     #saves into directory for less clutter
-    #no longer required since reconstruction from seed sequence works
-    #torch.save(model.phenotype.state_dict(), f"sav/CNN_elite_phenotype_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.pth")
+    
     agent_state = agent.to_state()
     with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
@@ -306,18 +300,6 @@ if __name__ == "__main__":
         loaded_model.phenotype = loaded_model.build_phenotype()
         loaded_model.reconstruct(seed_sequence=loaded_model.seed_sequence[1:], from_sequence= True)
         population.append(loaded_model)
-        # for i in range(params["population_size"] -1):
-        #     model = Agent(
-        #                 params["flat_size"] + params["recurr"] + params["no_img_size"],
-        #                 params["interdim1"],
-        #                 params["interdim2"],
-        #                 params["outdim"] + params["recurr"],
-        #                 seed_sequence = loaded_model.seed_sequence,
-        #                 generation = starting_point,
-        #                 genotype=loaded_model.genotype
-        #                 )
-        #     model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), "model_weights_CNN.pth")
-        #     population.append(model)
     for i in range (params["generations"]):
         fitness_list = []
         for model in population:
@@ -326,11 +308,11 @@ if __name__ == "__main__":
             fitness_list.append(model.fitness)
             # model.seed_sequence.append(newSeed)
         #for model in population:
-        #    print(model.fitness, model.action_sequence)
+
         fitness_vectors[f"Generation{i + starting_point}"] = fitness_list
         elite = eltism_selection(population)
         elite.phenotype.recurrence = torch.zeros(1,80)
-        #checks for significant jumps along the way and saves the new elites so they can be reviewed
+        #checks for increases along the way and saves the new elites so they can be reviewed
         if (elite.fitness > parent_fitness):
             save(elite)
         parent_fitness = elite.fitness        
@@ -353,12 +335,4 @@ if __name__ == "__main__":
         print(f'Fitness: {elite.fitness}, Generation: {elite.generation}')
     save(elite, fitness_vectors)
     
-    
-    # results = {
-    #     "fitness": elite.fitness,
-    #     "generation": elite.generation,
-    #     "action_sequence": elite.action_sequence
-    # }
-    # with open("outputtest.json", "w") as file:
-    #     json.dump(results, file)
         
