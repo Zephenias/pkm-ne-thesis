@@ -219,6 +219,11 @@ def save(agent, fitness_values = None):
     with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
     if fitness_values is not None:
+        metadata = {}
+        metadata['max_steps'] = params['max_steps']
+        metadata['generations'] = params['generations']
+        metadata['population_size'] = params['population_size']
+        fitness_values['metadata'] = metadata
         with open(f"sav/CNN_fitness_values_by_generation_total_{params['generations']}.json", "w") as file:
             json.dump(fitness_values, file)
     return
