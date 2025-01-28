@@ -1,12 +1,12 @@
 {
     "loading":
         {
-        "from scratch": false,
-        "init": "evaluate_phenotype_state.pth"
+        "from_scratch": false,
+        "json": "CNN_agent_state_gen26_f30.9_sigmaTrue.json"
         }
     ,
     "environment":{
-        "headless": true,
+        "headless": false,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
         "max_steps" : 100,

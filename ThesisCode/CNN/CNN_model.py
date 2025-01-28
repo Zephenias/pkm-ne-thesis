@@ -78,7 +78,7 @@ class Agent():
         if generation is not None:
             self.generation = generation
         else:
-            self.generation = 0
+            self.generation = 0 + starting_point
         if genotype is not None:
             self.genotype = [gene.clone() for gene in genotype]
 
@@ -90,6 +90,7 @@ class Agent():
             "out": self.outdim,
             "seed_sequence": self.seed_sequence,
             "generation": self.generation,
+            "fitness": self.fitness
         }
 
     def from_state(self,dict):
@@ -98,7 +99,8 @@ class Agent():
         self.interdim2 = dict["two"]
         self.outdim = dict["out"]
         self.seed_sequence = dict["seed_sequence"]
-        self.generation = dict["generation"]        
+        self.generation = dict["generation"]
+        self.fitness = dict["fitness"]        
 
     def init_genotype(self):
         rng_state = torch.random.get_rng_state()
@@ -168,7 +170,43 @@ class Agent():
         
         torch.random.set_rng_state(rng_state)
         return
+    
+    def reconstruct(self, state_dict=None, seed_sequence = None, from_sequence = False):
+        if not from_sequence:
+            model = NeuralNetwork()
+            model.load_state_dict(torch.load(replay["model_path"]))
+            self.phenotype = model
+            #torch.load(os.path.join(os.path.dirname(__file__),
+        else:
+            for seed in seed_sequence:
+                        rng_state = torch.random.get_rng_state()
 
+                        torch.manual_seed(seed)
+                        
+                        if params["use_sigma"]:
+                            sigma = params["sigma_lb"] + (params["sigma_ub"] - params["sigma_lb"]) * torch.rand(1)
+                        else:
+                            sigma = 1
+
+                        for i in range (self.phenotype.conv1.weight.shape[0]):
+                            noise = torch.randn_like(self.phenotype.conv1.weight.data[i]) * sigma
+                            self.phenotype.conv1.weight.data[i] += noise
+                        
+                        for i in range (self.phenotype.conv2.weight.shape[0]):
+                            noise = torch.randn_like(self.phenotype.conv2.weight.data[i]) * sigma
+                            self.phenotype.conv2.weight.data[i] += noise
+
+
+                        self.phenotype.fc1.weight.data += torch.randn(self.interdim1,self.datadim) * sigma
+                        self.phenotype.fc1.bias.data += torch.randn(self.interdim1) * sigma
+                        self.phenotype.fc2.weight.data += torch.randn(self.interdim2, self.interdim1) * sigma
+                        self.phenotype.fc2.bias.data += torch.randn(self.interdim2) * sigma
+                        self.phenotype.fc3.weight.data += torch.randn(self.outdim, self.interdim2) * sigma
+                        self.phenotype.fc3.bias.data += torch.randn(self.outdim) * sigma
+
+                        # self.generation += 1
+
+        return
 
 
 def evaluate(env, model):
@@ -235,21 +273,51 @@ if __name__ == "__main__":
     population = []
     init_seeds = []
     fitness_vectors = {}
-    parent_fitness = 0
-    significance = 0.2
-    torch.manual_seed(params["seed"])
-    for i in range (10):
-        init_seeds.append(torch.randint(-69420, 69420, (1,)).item())
-    for i in range (10):
-        model = Agent(
-                        params["flat_size"] + params["recurr"] + params["no_img_size"],
-                        params["interdim1"],
-                        params["interdim2"],
-                        params["outdim"] + params["recurr"],
-                        seed_sequence= [init_seeds[i]])
-        model.genotype = model.init_genotype()
-        model.phenotype = model.build_phenotype()
-        population.append(model)
+    starting_point = 0
+    if loading["from_scratch"]:
+        parent_fitness = 0
+        torch.manual_seed(params["seed"])
+        for i in range (10):
+            init_seeds.append(torch.randint(-69420, 69420, (1,)).item())
+        for i in range (10):
+            model = Agent(
+                            params["flat_size"] + params["recurr"] + params["no_img_size"],
+                            params["interdim1"],
+                            params["interdim2"],
+                            params["outdim"] + params["recurr"],
+                            seed_sequence= [init_seeds[i]])
+            model.genotype = model.init_genotype()
+            model.phenotype = model.build_phenotype()
+            population.append(model)
+    else:
+        with open (f'sav/{loading["json"]}', "r") as file:
+            model_state = json.load(file)
+        starting_point = model_state["generation"]
+        torch.manual_seed(params["seed"])
+        loaded_model = Agent(
+            params["flat_size"] + params["recurr"] + params["no_img_size"],
+            params["interdim1"],
+            params["interdim2"],
+            params["outdim"] + params["recurr"],
+            model_state["seed_sequence"]
+            )
+        parent_fitness = loaded_model.fitness
+        loaded_model.genotype = loaded_model.init_genotype()
+        loaded_model.phenotype = loaded_model.build_phenotype()
+        loaded_model.reconstruct(seed_sequence=loaded_model.seed_sequence[1:], from_sequence= True)
+        population.append(loaded_model)
+        # for i in range(params["population_size"] -1):
+        #     model = Agent(
+        #                 params["flat_size"] + params["recurr"] + params["no_img_size"],
+        #                 params["interdim1"],
+        #                 params["interdim2"],
+        #                 params["outdim"] + params["recurr"],
+        #                 seed_sequence = loaded_model.seed_sequence,
+        #                 generation = starting_point,
+        #                 genotype=loaded_model.genotype
+        #                 )
+        #     model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), "model_weights_CNN.pth")
+        #     population.append(model)
     for i in range (params["generations"]):
         fitness_list = []
         for model in population:
@@ -259,7 +327,7 @@ if __name__ == "__main__":
             # model.seed_sequence.append(newSeed)
         #for model in population:
         #    print(model.fitness, model.action_sequence)
-        fitness_vectors[f"Generation{i}"] = fitness_list
+        fitness_vectors[f"Generation{i + starting_point}"] = fitness_list
         elite = eltism_selection(population)
         elite.phenotype.recurrence = torch.zeros(1,80)
         #checks for significant jumps along the way and saves the new elites so they can be reviewed
@@ -275,7 +343,7 @@ if __name__ == "__main__":
                         params["interdim2"],
                         params["outdim"] + params["recurr"],
                         seed_sequence = elite.seed_sequence,
-                        generation = i,
+                        generation = i + starting_point,
                         genotype=elite.genotype
                         )
             model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), "model_weights_CNN.pth")
