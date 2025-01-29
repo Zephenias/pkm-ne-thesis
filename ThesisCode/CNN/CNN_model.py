@@ -252,7 +252,7 @@ def save(agent, fitness_values = None, starting_point = None):
         json.dump(agent_state, file)
     if fitness_values is not None:
         metadata = {}
-        metadata["max_steps"] = params["max_steps"]
+        metadata["max_steps"] = environment["max_steps"]
         metadata["population_size"] = params["population_size"]
         metadata["total_generations"] = params["generations"] + starting_point
         fitness_values['metadata'] = metadata
