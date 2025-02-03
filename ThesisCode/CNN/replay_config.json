@@ -2,14 +2,14 @@
     "replay":
         {
         "model_path": "sav/CNN_elite_phenotype_gen1_f40.8_sigmaTrue.pth",
-        "json":"CNN_agent_state_gen56_f107.7_sigmaTrue.json"
+        "json":"CNN_agent_state_gen9_f123.5_sigmaTrue.json"
         }
     ,
     "environment":{
         "headless": false,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
-        "max_steps" : 5000,
+        "max_steps" : 10000,
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb"
     },

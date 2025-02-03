@@ -9,7 +9,7 @@
         "headless": true,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
-        "max_steps" : 100,
+        "max_steps" : 10000,
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb",
         "cpu_cores": 20

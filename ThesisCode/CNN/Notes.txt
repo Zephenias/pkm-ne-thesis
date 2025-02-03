@@ -25,3 +25,7 @@ parallel with multiprocessing and using the GPU: 2m 4,218
 
 eval 100 step 20 gens 20 individuals, headless:
 parallel using GPU: 4m 0,561
+10000 steps 20 gen 20 individuals, headless:
+29m 54s
+
+for some reason render does not close the final instance and gets stuck, headless works though
