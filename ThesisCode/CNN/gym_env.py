@@ -13,7 +13,7 @@ import numpy as np
 from global_map import local_to_global, GLOBAL_MAP_SHAPE
 
 class RedGymEnv (Env):
-    def __init__(self,config = None):
+    def __init__(self,config = None, env_id = None):
         self.headless = config["headless"]
         self.print_fitness = config["print_fitness"]
         self.init_state = config["init_state"]
@@ -22,6 +22,7 @@ class RedGymEnv (Env):
         self.frame_stacks = 3
         self.gb_path = ["gb_path"]
         self.reset_count = 0
+        self.env_id = env_id
 
         self.essential_map_locations= {
             v:i for i,v in enumerate([

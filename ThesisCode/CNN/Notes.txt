@@ -3,5 +3,25 @@ same config but headless -> 5:45 minutes
 
 same config headless on strunzit -> 11:45 minutes
 
+multiprocessing did not work because data needs to be seriealizable and I would have had to rework everything.
+possible approach, init environments for every process call, so I only need to give state dict and env config. problem: need to save returns
+into object that I need to keep outside the call.
+
 Goals:
-Parallelization
+Parallelization - kinda done feels slowish and high ressource though
+
+
+
+Time evaluation: 100 steps 10 generations 20 individuals, headless:
+non parallel: 2m 56,412
+parallel 5threads: 3m 42,743
+parallel 10 threads: 3m 48,489
+parallel 20 threads: 4m 59,072
+
+-> conclusion: current way of running in parallel is not functional for what the goal is.
+
+parallel with multiprocessing: 4m 39,694
+parallel with multiprocessing and using the GPU: 2m 4,218
+
+eval 100 step 20 gens 20 individuals, headless:
+parallel using GPU: 4m 0,561

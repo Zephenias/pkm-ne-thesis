@@ -1,17 +1,18 @@
 {
     "loading":
         {
-        "from_scratch": false,
+        "from_scratch": true,
         "json": "CNN_agent_state_gen26_f30.9_sigmaTrue.json"
         }
     ,
     "environment":{
-        "headless": false,
+        "headless": true,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
         "max_steps" : 100,
         "action_freq": 24,
-        "gb_path": "~/rom/PokemonRed.gb"
+        "gb_path": "~/rom/PokemonRed.gb",
+        "cpu_cores": 20
     },
     "params": {
         "flat_size" : 5760,
