@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import json
 
-with open ("/home/zephenias/ThesisGit/pkm-ne-thesis/ThesisCode/Documenting/2000steps_pop15_gens200/CNN_fitness_values_by_generation_total_200.json", "r") as file:
+with open ("/home/zephenias/ThesisGit/pkm-ne-thesis/ThesisCode/Documenting/10ksteps_pop10_gen20_10cores/CNN_fitness_values_by_generation_total_200.json", "r") as file:
     data = json.load(file)
 
 averages = []
@@ -48,7 +48,7 @@ def create_plots():
     ax.plot(x, max_values, label='Maximum Fitness Values', color='red')
     ax.plot(x, min_values, label='Minimum Fitness Values', color='green')
 
-    ax.set_title("Layered view of Fitness Values \n Gen: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
+    ax.set_title(f"Layered view of Fitness Values \n Gen: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
     ax.set_xlabel("Generations")
     ax.set_ylabel("Fitness")
     ax.grid(True)
