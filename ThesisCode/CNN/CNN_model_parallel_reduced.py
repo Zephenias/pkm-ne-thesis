@@ -7,7 +7,7 @@ import os
 import multiprocessing
 from gym_env_v2 import RedGymEnv
 import json
-import pickle
+import socket
 
 
 configpath = os.path.join(os.path.dirname(__file__), "config_reduced.json")
@@ -21,6 +21,7 @@ environment = config.get("environment")
 environment["init_state"] = os.path.expanduser(environment["init_state"])
 environment["gb_path"] = os.path.expanduser(environment["gb_path"])
 params = config.get("params")
+hostname = socket.gethostname()
 
 device = torch.device("cuda" if torch.cuda.is_available() else cpu)
 # print(f"Using device: {device}")
@@ -263,7 +264,7 @@ def save(agent, fitness_values = None, starting_point = None):
     #saves into directory for less clutter
     
     agent_state = agent.to_state()
-    with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
+    with open(f"sav/{hostname}_CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
     if fitness_values is not None:
         metadata = {}
@@ -271,7 +272,7 @@ def save(agent, fitness_values = None, starting_point = None):
         metadata["population_size"] = params["population_size"]
         metadata["total_generations"] = params["generations"] + starting_point
         fitness_values['metadata'] = metadata
-        with open(f"sav/CNN_fitness_values_by_generation_total_{metadata['total_generations']}.json", "w") as file:
+        with open(f"sav/{hostname}_CNN_fitness_values_by_generation_total_{metadata['total_generations']}.json", "w") as file:
             json.dump(fitness_values, file)
     return
 
