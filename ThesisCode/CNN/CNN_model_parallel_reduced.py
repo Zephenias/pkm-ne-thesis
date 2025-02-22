@@ -266,6 +266,7 @@ def save(agent, fitness_values = None, starting_point = None):
     agent_state = agent.to_state()
     with open(f"sav/{hostname}_CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
+
     if fitness_values is not None:
         metadata = {}
         metadata["max_steps"] = environment["max_steps"]
@@ -407,6 +408,8 @@ if __name__ == "__main__":
         for individual in elite:
             print(f'Fitness: {individual.fitness}, Generation: {individual.generation}')
         population = generate_offspring(elite)
-    save(elite, fitness_vectors,starting_point = starting_point)
+    save(elite[0], fitness_vectors,starting_point = starting_point)
+    if len(elite) > 1:
+        save (elite[1])
     
         
