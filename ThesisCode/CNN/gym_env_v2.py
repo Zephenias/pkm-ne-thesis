@@ -23,6 +23,8 @@ class RedGymEnv (Env):
         self.gb_path = ["gb_path"]
         self.reset_count = 0
         self.env_id = env_id
+        self.stuck_threshold = config["stuck_threshold"]
+        self.is_harsh = config["harsh"]
 
         self.essential_map_locations= {
             v:i for i,v in enumerate([
@@ -343,7 +345,11 @@ class RedGymEnv (Env):
             count = self.seen_coords[coord_string]
         else:
             count = 0
-        return 0 if count < 30 else count/10        
+        
+        if self.is_harsh:
+            return 0 if count < self.stuck_threshold else count/10
+        else:
+            return 0 if count < self.stuck_threshold else 1      
     
     def get_game_state_reward(self, print_stats=False):
         state_scores= {
