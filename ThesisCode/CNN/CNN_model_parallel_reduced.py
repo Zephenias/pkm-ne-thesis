@@ -361,6 +361,21 @@ if __name__ == "__main__":
         parallel_evaluation(population)
         for model in population:
             fitness_list.append(model.fitness)
+        if i > 0:
+            if starting_point != 0 and i > i+starting_point:
+                if len(elite) > 1:
+                    fitness_list.append(elite[0].fitness)
+                    fitness_list.append(elite[1].fitness)
+                else:
+                    fitness_list.append(elite[0].fitness)
+            elif starting_point == 0:
+                if len(elite) > 1:
+                    fitness_list.append(elite[0].fitness)
+                    fitness_list.append(elite[1].fitness)
+                else:
+                    fitness_list.append(elite[0].fitness)
+                    
+
         fitness_vectors[f"Generation{i + starting_point}"] = fitness_list
 
         # Logic for params["selection_logic"]: 0 = select best including parent, 1 = select best 2 including parent, 
