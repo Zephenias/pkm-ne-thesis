@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import json
 
-with open ("/home/zephenias/ThesisGit/pkm-ne-thesis/ThesisCode/Documenting/5ksteps_pop10_1k_gens_sigma_true_10cores/CNN_fitness_values_by_generation_total_1000.json", "r") as file:
+with open ("Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshF300/selection_2/seed_45/ananke_CNN_fitness_values_by_generation_total_200.json", "r") as file:
     data = json.load(file)
 
 averages = []
@@ -20,25 +20,28 @@ def create_plots():
     for i in range (0,len(averages)):
         x.append(i)
     fig, ax = plt.subplots()
-    ax.plot(x,averages, marker = "o", label = "Line Plot")
-    plt.title(f"Average Fitness by Generation \n Gen: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
-    plt.xlabel("Generation")
+    ax.plot(x,averages, label = "Line Plot", color = "blue")
+    plt.title(f"Average Fitness by Generation \n Iterations: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
+    plt.xlabel("Iteration")
     plt.ylabel("Average Fitness Value")
     plt.grid(True)
+    plt.tight_layout()
 
     plt.figure()
-    plt.plot(x, min_values, marker = "o", label = "Line Plot")
-    plt.title(f"Minimum Fitness Value by Generation \n Gen: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
-    plt.xlabel("Generation")
+    plt.plot(x, min_values, label = "Line Plot", color = "blue")
+    plt.title(f"Minimum Fitness Value by Generation \n Iterations: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
+    plt.xlabel("Iteration")
     plt.ylabel("Minimum Fitness Value")
     plt.grid(True)
+    plt.tight_layout()
 
     plt.figure()
-    plt.plot(x, max_values, marker = "o", label = "Line Plot")
-    plt.title(f"Maximum Fitness Value by Generation \n Gen: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
-    plt.xlabel("Generation")
+    plt.plot(x, max_values, label = "Line Plot", color = "blue")
+    plt.title(f"Maximum Fitness Value by Generation \n Iterations: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
+    plt.xlabel("Iteration")
     plt.ylabel("Maximum Fitness Value")
     plt.grid(True)
+    plt.tight_layout()
 
     # Create a figure and axis
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -48,15 +51,41 @@ def create_plots():
     ax.plot(x, max_values, label='Maximum Fitness Values', color='red')
     ax.plot(x, min_values, label='Minimum Fitness Values', color='green')
 
-    ax.set_title(f"Layered view of Fitness Values \n Gen: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
-    ax.set_xlabel("Generations")
+    ax.set_title(f"Layered view of Fitness Values \n Iteration: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
+    ax.set_xlabel("Iteration")
     ax.set_ylabel("Fitness")
+    ax.legend(title = "Legend", loc = "upper left", bbox_to_anchor = (1.0, 0.625))
+    plt.subplots_adjust(right = 0.75)
     ax.grid(True)
+    plt.tight_layout()
 
-    plt.show()
+
 
     return
 
+def average_generation_plot(value_list, step):
+    print(len(averages))
+    x = []
+    averages_gen = []
+    chunk_counter = 1 
+    for i in range (0, len(value_list), step):
+        x.append(chunk_counter)
+        chunk_counter += 1
+        chunk = value_list[i:i+ step]
+        avg = calculate_average(chunk)
+        averages_gen.append(avg)
+    
+    plt.figure()
+    plt.plot(x, averages_gen, label = "Line Plot", color = "purple", marker = "d", drawstyle = "steps-post" )
+    plt.title(f"Average Fitness Value by Chunk of size {step} \n Iterations: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
+    plt.xlabel("Chunk Number")
+    plt.ylabel("Average Fitness Value of Chunk")
+    plt.xticks(x)
+    plt.grid(True)
+    plt.tight_layout()
+
+
+    return
 
 
 if __name__ == "__main__":
@@ -72,3 +101,7 @@ if __name__ == "__main__":
             meta["population_size"] = data[generation]["population_size"]
             print(meta)
     create_plots()
+    average_generation_plot(averages, 10)
+    
+    
+    plt.show()

@@ -22,7 +22,7 @@
         "interdim1" : 128,
         "interdim2": 64,
         "outdim" : 5,
-        "seed" : 46,
+        "seed" : 45,
         "use_sigma": true,
         "sigma_ub": 1,
         "sigma_lb": 0.1,
