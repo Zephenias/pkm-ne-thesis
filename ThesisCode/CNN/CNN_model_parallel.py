@@ -22,7 +22,7 @@ environment["init_state"] = os.path.expanduser(environment["init_state"])
 environment["gb_path"] = os.path.expanduser(environment["gb_path"])
 params = config.get("params")
 
-device = torch.device("cuda" if torch.cuda.is_available() else cpu)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # print(f"Using device: {device}")
 
 class NeuralNetwork(nn.Module):
