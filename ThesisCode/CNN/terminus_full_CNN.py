@@ -10,7 +10,7 @@ import json
 import socket
 
 
-configpath = os.path.join(os.path.dirname(__file__), "config.json")
+configpath = os.path.join(os.path.dirname(__file__), "terminus_config_full.json")
 with open(configpath, 'r') as file:
     config = json.load(file)
     
@@ -23,7 +23,7 @@ environment["gb_path"] = os.path.expanduser(environment["gb_path"])
 params = config.get("params")
 hostname = socket.gethostname()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(environment["device"] if torch.cuda.is_available() else "cpu")
 # print(f"Using device: {device}")
 
 class NeuralNetwork(nn.Module):

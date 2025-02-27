@@ -6,7 +6,7 @@
         }
     ,
     "environment":{
-        "headless": false,
+        "headless": true,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
         "max_steps" : 2000,

@@ -12,24 +12,23 @@
         "max_steps" : 2000,
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb",
-        "stuck_threshold": 300,
-        "harsh": false,
         "cpu_cores": 5,
         "device": "cuda"
     },
     "params": {
-        "flat_size" : 2880,
+        "flat_size" : 5760,
+        "recurr": 80,
         "no_img_size": 2317,
-        "interdim1" : 128,
-        "interdim2": 64,
-        "outdim" : 5,
-        "seed" : 45,
+        "interdim1" : 4000,
+        "interdim2": 2000,
+        "outdim" : 7,
+        "seed" : 42,
         "use_sigma": true,
         "sigma_ub": 1,
         "sigma_lb": 0.1,
         "generations": 2,
-        "population_size": 5,
-        "selection_logic": 1
+        "population_size": 15,
+        "selection_logic": 0
     }
 
 }
