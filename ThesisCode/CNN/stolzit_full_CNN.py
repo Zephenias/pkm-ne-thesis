@@ -282,7 +282,7 @@ def save(agent, fitness_values = None, starting_point = None):
         metadata["total_generations"] = params["generations"] + starting_point
         metadata["device"] = f"{device}"
         fitness_values['metadata'] = metadata
-        with open(f"sav/CNN_fitness_values_by_generation_total_{metadata['total_generations']}.json", "w") as file:
+        with open(f"sav/{hostname}_full_CNN_fitness_values_by_generation_total_{metadata['total_generations']}.json", "w") as file:
             json.dump(fitness_values, file)
     return
 

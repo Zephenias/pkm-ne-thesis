@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import json
 
-file_list = ["Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshT30/selection_1/seed_42/gameboy_CNN_fitness_values_by_generation_total_200.json",
+file_list = [
+"Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshT30/selection_1/seed_42/gameboy_CNN_fitness_values_by_generation_total_200.json",
 "Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshT30/selection_1/seed_43/obsidian_CNN_fitness_values_by_generation_total_200.json",
 "Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshT30/selection_1/seed_44/trigger_CNN_fitness_values_by_generation_total_200.json",
 "Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshT30/selection_1/seed_45/olivenit_CNN_fitness_values_by_generation_total_200.json",
@@ -57,11 +58,11 @@ def create_avg_plots(avg0, avg1, avg2, avg3, avg4, meta):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Plot all three functions
-    ax.plot(x, avg0, label = "$conf_{cnn[42]}^3$", color='blue')
-    ax.plot(x, avg1, label = "$conf_{cnn[43]}^3$", color='red')
-    ax.plot(x, avg2, label = "$conf_{cnn[44]}^3$", color='green')
-    ax.plot(x, avg3, label = "$conf_{cnn[45]}^3$", color = "purple")
-    ax.plot(x, avg4, label = "$conf_{cnn[46]}^3$", color = "orange")
+    ax.plot(x, avg0, label = "$conf_{cnn[42]}^2$", color='blue')
+    ax.plot(x, avg1, label = "$conf_{cnn[43]}^2$", color='red')
+    ax.plot(x, avg2, label = "$conf_{cnn[44]}^2$", color='green')
+    ax.plot(x, avg3, label = "$conf_{cnn[45]}^2$", color = "purple")
+    ax.plot(x, avg4, label = "$conf_{cnn[46]}^2$", color = "orange")
 
     ax.set_title(f"Layered view of Average Fitness Values \n Iteration: {meta['total_generations']} Steps: {meta['max_steps']} Individuals: {meta['population_size']}")
     ax.set_xlabel("Iteration")
