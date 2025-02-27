@@ -60,7 +60,7 @@ class Agent():
     seed_sequence: list[int] = None
     generation: int = None
 
-    def __init__(self, data, one, two, out, seed_sequence = None, generation = None, genotype = None, state_dict = None):
+    def __init__(self, data, one, two, out, seed_sequence = None, generation = None, genotype = None, state_dict = None, sigma_sequence = None):
         self.datadim = data
         self.interdim1 = one
         self.interdim2 = two
@@ -71,6 +71,11 @@ class Agent():
             print("No seed initialized for Model, setting starting seed to 42.")
             self.seed_sequence.append(42)
         self.fitness = 0
+        if sigma_sequence:
+            self.sigma_sequence = sigma_sequence.copy()
+        if sigma_sequence is None:
+            self.sigma_sequence = [1]
+        self.fitness_dict = {}
 
         #might no longer be relevant
         self.action_sequence = []
@@ -90,10 +95,12 @@ class Agent():
             "out": self.outdim,
             "seed_sequence": self.seed_sequence,
             "generation": self.generation,
-            "fitness": self.fitness
+            "fitness": self.fitness,
+            "fitness_dict": self.fitness_dict,
+            "sigma_sequence": self.sigma_sequence
         }
     
-    def evaluation_redux(self):
+    def evaluation_reduction(self):
         state = self.phenotype.state_dict()
         return state
 
@@ -139,7 +146,7 @@ class Agent():
     
     def mutate(self,newRn, state_dict, attributes = None):
         model = NeuralNetwork()
-        model.load_state_dict(torch.load(state_dict))
+        model.load_state_dict(state_dict)
         self.phenotype = model
 
 
@@ -152,6 +159,7 @@ class Agent():
         else:
             sigma = 1
 
+        self.sigma_sequence.append(sigma.item())
         self.seed_sequence.append(newRn)
 
         for i in range (self.phenotype.conv1.weight.shape[0]):
@@ -226,11 +234,11 @@ def evaluate(model_state):
             output = model(screens, no_img_input)
             max_value, max_index = torch.max(output, dim=1)
             stepSequence.append(max_index.item())
-            input,fitness,finished,_ = env.step(max_index)
+            input,fitness,finished, fitness_dict = env.step(max_index)
             screens, no_img_input = prep_obs(input) #adjusts the observation to the required data format
             screens = screens.to(device)
             no_img_input = no_img_input.to(device)
-    return fitness
+    return fitness, fitness_dict
 
 
 def prep_obs(obs):
@@ -249,14 +257,15 @@ def prep_obs(obs):
 
     return screen, torch.cat([map_flat, noimg.unsqueeze(0)], dim = 1)
 
-def eltism_selection(population):
-    highest_index, highest_individual = max(
-        enumerate(population), key=lambda x: x[1].fitness
-    )
-    return highest_individual
+def elitism_selection(population):
+    if len(population) > 1:
+        population.sort(key = lambda individual: individual.fitness, reverse = True)
+        return population[0], population[1]
+    else:
+        return population[0], population[0]
 
 def save(agent, fitness_values = None, starting_point = None):
-    print(agent.seed_sequence)
+
     #makes directory in case it is not there yet
     os.makedirs("sav", exist_ok=True)
     #saves into directory for less clutter
@@ -264,6 +273,7 @@ def save(agent, fitness_values = None, starting_point = None):
     agent_state = agent.to_state()
     with open(f"sav/CNN_agent_state_gen{agent.generation}_f{agent.fitness}_sigma{params['use_sigma']}.json", "w") as file:
         json.dump(agent_state, file)
+
     if fitness_values is not None:
         metadata = {}
         metadata["max_steps"] = environment["max_steps"]
@@ -274,50 +284,51 @@ def save(agent, fitness_values = None, starting_point = None):
             json.dump(fitness_values, file)
     return
 
-def generate_new_population(elite):
-    new_population = []
-    for j in range(params["population_size"] -1):
+# Logic for params["selection_logic"]: 0 = select best including parent, 1 = select best 2 including parent, 
+# 2 = select best excluding parent, 3 select best 2 excluding parent
+
+def generate_offspring(elite):
+    offspring = []
+    for j in range(params["population_size"]):
+            parent = 0
+            if params["selection_logic"] == 1 or params["selection_logic"] == 3:
+                parent = torch.randint(0,1,size=(1,)).item()
             model = Agent(
-                        params["flat_size"] + params["recurr"] + params["no_img_size"],
+                        params["flat_size"] + params["no_img_size"] + params["recurr"],
                         params["interdim1"],
                         params["interdim2"],
                         params["outdim"] + params["recurr"],
-                        seed_sequence = elite.seed_sequence,
+                        seed_sequence = elite[parent].seed_sequence,
                         generation = i + starting_point,
-                        genotype=elite.genotype
+                        genotype=elite[parent].genotype,
+                        sigma_sequence=elite[parent].sigma_sequence
                         )
-            model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), "model_weights_CNN.pth")
-            new_population.append(model)
-    new_population.append(elite)
-    return new_population
+            model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), elite[parent].evaluation_reduction())
+            offspring.append(model)
+    return offspring
 
 def parallel_evaluation(population):
     with multiprocessing.Pool(processes=environment["cpu_cores"]) as pool:
-        results = pool.map(evaluate, [model.evaluation_redux() for model in population])
+        results = pool.map(evaluate, [model.evaluation_reduction() for model in population])
 
         for model, fitness in zip(population, results):
-            model.fitness = fitness 
-
-
-    # for model in population:
-    #         env.reset()
-    #         model.fitness, model.action_sequence, newSeed = evaluate(env, model)
-    #         fitness_list.append(model.fitness)
+            model.fitness = fitness[0]
+            model.fitness_dict = fitness[1] 
     return
+
 if __name__ == "__main__":
     
-    #num_evns = environment["cpu_cores"]
-    #environments = [RedGymEnv(environment, i)for i in range (num_evns)]
-    #env = RedGymEnv(environment)
+
     multiprocessing.set_start_method("spawn")
     
     
     population = []
     init_seeds = []
     fitness_vectors = {}
+    elite = []
     starting_point = 0
     if loading["from_scratch"]:
-        parent_fitness = 0
+        parent_fitness = [0,0]
         torch.manual_seed(params["seed"])
         for i in range (10):
             init_seeds.append(torch.randint(-69420, 69420, (1,)).item())
@@ -341,9 +352,10 @@ if __name__ == "__main__":
             params["interdim1"],
             params["interdim2"],
             params["outdim"] + params["recurr"],
-            model_state["seed_sequence"]
+            model_state["seed_sequence"],
+            sigma_sequence= model_state["sigma_sequence"]
             )
-        parent_fitness = loaded_model.fitness
+        parent_fitness = [0,0]
         loaded_model.genotype = loaded_model.init_genotype()
         loaded_model.phenotype = loaded_model.build_phenotype()
         loaded_model.reconstruct(seed_sequence=loaded_model.seed_sequence[1:], from_sequence= True)
@@ -353,38 +365,76 @@ if __name__ == "__main__":
 
     for i in range (params["generations"]):
         fitness_list = []
-        #TODO: parallelize this step:
         parallel_evaluation(population)
-        # for model in population:
-        #     env.reset()
-        #     model.fitness, model.action_sequence, newSeed = evaluate(env, model)
-        #     fitness_list.append(model.fitness)
         for model in population:
             fitness_list.append(model.fitness)
+        if i > 0:
+            if starting_point != 0 and i > i+starting_point:
+                if len(elite) > 1:
+                    fitness_list.append(elite[0].fitness)
+                    fitness_list.append(elite[1].fitness)
+                else:
+                    fitness_list.append(elite[0].fitness)
+            elif starting_point == 0:
+                if len(elite) > 1:
+                    fitness_list.append(elite[0].fitness)
+                    fitness_list.append(elite[1].fitness)
+                else:
+                    fitness_list.append(elite[0].fitness)
+
         fitness_vectors[f"Generation{i + starting_point}"] = fitness_list
-        elite = eltism_selection(population)
-        elite.phenotype.recurrence = torch.zeros(1,80)
+        # Logic for params["selection_logic"]: 0 = select best including parent, 1 = select best 2 including parent, 
+        # 2 = select best excluding parent 5% of the time, 3 select best 2 excluding either parent 5% of the time
+        if params["selection_logic"] == 0 or params["selection_logic"] == 2:
+            if len(elite) < 1:
+                elite1, _ = elitism_selection(population)
+                elite.append(elite1)
+            else:
+                if params["selection_logic"] == 2:
+                    rn = torch.randint(1,100,(1,)).item()
+                    if rn < 95:
+                        population.append(elite[0])
+                else:
+                    population.append(elite[0])
+                elite[0], _ = elitism_selection(population)
+        elif params["selection_logic"] == 1 or params["selection_logic"] == 3:
+            if len(elite) < 1:
+                elite1, elite2 = elitism_selection(population)
+                elite.append(elite1)
+                elite.append(elite2)
+            else:
+                if params["selection_logic"] == 3:
+                    rn1 = torch.randint(1, 100, size= (1,)).item()
+                    rn2 = torch.randint(1,100, (1,)).item()
+                    if rn1 < 95:
+                        population.append(elite[0])
+                    if rn2 < 95:
+                        population.append(elite[1])
+                else:
+                    population.append(elite[0])
+                    population.append(elite[1])
+                elite[0], elite[1] = elitism_selection(population)
+        else:
+            print("unexpected value for params['selection_logic']")
+        
+        if len(elite) > 1:
+            elite[1].phenotype.recurrence = torch.zeros(1,80)
+        elite[0].phenotype.recurrence = torch.zeros(1,80)
         #checks for increases along the way and saves the new elites so they can be reviewed
-        if (elite.fitness > parent_fitness):
-            save(elite)
-        parent_fitness = elite.fitness        
-        torch.save(elite.phenotype.state_dict(), "model_weights_CNN.pth")
-        population = generate_new_population(elite)
-        # for j in range(params["population_size"] -1):
-        #     model = Agent(
-        #                 params["flat_size"] + params["recurr"] + params["no_img_size"],
-        #                 params["interdim1"],
-        #                 params["interdim2"],
-        #                 params["outdim"] + params["recurr"],
-        #                 seed_sequence = elite.seed_sequence,
-        #                 generation = i + starting_point,
-        #                 genotype=elite.genotype
-        #                 )
-        #     model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), "model_weights_CNN.pth")
-        #     new_population.append(model)
-        # new_population.append(elite)
-        # population = new_population
-        print(f'Fitness: {elite.fitness}, Generation: {elite.generation}')
-    save(elite, fitness_vectors,starting_point = starting_point)
+        #checks for increases along the way and saves the new elites so they can be reviewed
+        if (elite[0].fitness > parent_fitness[0]):
+            save(elite[0])
+        parent_fitness[0] = elite[0].fitness
+        if len(elite) > 1 and elite[1].fitness > parent_fitness[1]:
+            save(elite[1])
+            parent_fitness[1] = elite[1].fitness
+
+        population = generate_offspring(elite)
+
+        for individual in elite:
+            print(f'Fitness: {individual.fitness}, Generation: {individual.generation}')
+    save(elite[0], fitness_vectors,starting_point = starting_point)
+    if len(elite) > 1:
+        save (elite[1])
     
         

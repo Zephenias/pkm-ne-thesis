@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import json
 
-with open ("Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshF300/selection_2/seed_45/ananke_CNN_fitness_values_by_generation_total_200.json", "r") as file:
+with open ("Documenting/CNN_Para_Reduced_SigmaT_Selection_Diff/2000steps_15pop_200gens_SigmaT_harshT30/selection_1/seed_46/strunzit_CNN_fitness_values_by_generation_total_200.json", "r") as file:
     data = json.load(file)
 
 averages = []

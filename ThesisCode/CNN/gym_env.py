@@ -111,6 +111,7 @@ class RedGymEnv (Env):
         self.step_count = 0
         
         self.fitness = 0
+        self.fitness_dict = {}
 
         self.max_map_progress = 0
         self.progress_reward = self.get_game_state_reward() #TODO call differently, probably
@@ -176,9 +177,9 @@ class RedGymEnv (Env):
         self.step_count += 1
 
         if step_limit_reached:
-            self.fitness = self.get_game_state_reward()
+            self.fitness, self.fitness_dict = self.get_game_state_reward()
 
-        return obs, self.fitness, step_limit_reached, {}
+        return obs, self.fitness, step_limit_reached, self.fitness_dict
 
     def run_action_on_emulator(self,action):
         #press button
@@ -353,4 +354,4 @@ class RedGymEnv (Env):
             "explore": len(self.seen_coords)* 0.3, 
             "stuck": self.get_current_coord_count_reward() * -0.1 #not sure if useful
         }
-        return sum(state_scores.values())
+        return sum(state_scores.values()), state_scores

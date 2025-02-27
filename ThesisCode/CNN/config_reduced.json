@@ -9,12 +9,12 @@
         "headless": false,
         "print_fitness": true,
         "init_state": "~/rom/PokemonRed.gb.state",
-        "max_steps" : 2000,
+        "max_steps" : 200,
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb",
         "stuck_threshold": 300,
         "harsh": false,
-        "cpu_cores": 5
+        "cpu_cores": 10
     },
     "params": {
         "flat_size" : 2880,
@@ -26,9 +26,9 @@
         "use_sigma": true,
         "sigma_ub": 1,
         "sigma_lb": 0.1,
-        "generations": 2,
-        "population_size": 5,
-        "selection_logic": 1
+        "generations": 10,
+        "population_size": 10,
+        "selection_logic": 0
     }
 
 }

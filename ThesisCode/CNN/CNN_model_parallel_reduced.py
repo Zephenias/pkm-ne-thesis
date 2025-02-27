@@ -59,7 +59,7 @@ class Agent():
     seed_sequence: list[int] = None
     generation: int = None
 
-    def __init__(self, data, one, two, out, seed_sequence = None, generation = None, genotype = None, state_dict = None):
+    def __init__(self, data, one, two, out, seed_sequence = None, generation = None, genotype = None, state_dict = None, sigma_sequence = None):
         self.datadim = data
         self.interdim1 = one
         self.interdim2 = two
@@ -70,6 +70,10 @@ class Agent():
             print("No seed initialized for Model, setting starting seed to 42.")
             self.seed_sequence.append(42)
         self.fitness = 0
+        if sigma_sequence:
+            self.sigma_sequence = sigma_sequence.copy()
+        if sigma_sequence is None:
+            self.sigma_sequence = [1]
         self.fitness_dict = {}
 
         #might no longer be relevant
@@ -91,7 +95,8 @@ class Agent():
             "seed_sequence": self.seed_sequence,
             "generation": self.generation,
             "fitness": self.fitness,
-            "fitness_dict": self.fitness_dict
+            "fitness_dict": self.fitness_dict,
+            "sigma_sequence": self.sigma_sequence
         }
     
     def evaluation_reduction(self):
@@ -153,6 +158,7 @@ class Agent():
         else:
             sigma = 1
 
+        self.sigma_sequence.append(sigma.item())
         self.seed_sequence.append(newRn)
 
         for i in range (self.phenotype.conv1.weight.shape[0]):
@@ -293,11 +299,11 @@ def generate_offspring(elite):
                         params["outdim"],
                         seed_sequence = elite[parent].seed_sequence,
                         generation = i + starting_point,
-                        genotype=elite[parent].genotype
+                        genotype=elite[parent].genotype,
+                        sigma_sequence=elite[parent].sigma_sequence
                         )
             model.mutate(torch.randint(-2**31, 2**31 - 1, (1,)).item(), elite[parent].evaluation_reduction())
             offspring.append(model)
-    #new_population.append(elite)
     return offspring
 
 def parallel_evaluation(population):
@@ -307,9 +313,8 @@ def parallel_evaluation(population):
         for model, fitness in zip(population, results):
             model.fitness = fitness[0]
             model.fitness_dict = fitness[1]
-
-
     return
+
 if __name__ == "__main__":
     
 
@@ -346,7 +351,8 @@ if __name__ == "__main__":
             params["interdim1"],
             params["interdim2"],
             params["outdim"],
-            model_state["seed_sequence"]
+            model_state["seed_sequence"],
+            sigma_sequence= model_state["sigma_sequence"]
             )
         parent_fitness = [0,0]
         loaded_model.genotype = loaded_model.init_genotype()
@@ -419,7 +425,7 @@ if __name__ == "__main__":
         if len(elite) > 1 and elite[1].fitness > parent_fitness[1]:
             save(elite[1])
             parent_fitness[1] = elite[1].fitness        
-        #torch.save(elite.phenotype.state_dict(), "model_weights_CNN.pth")
+
         for individual in elite:
             print(f'Fitness: {individual.fitness}, Generation: {individual.generation}')
         population = generate_offspring(elite)
