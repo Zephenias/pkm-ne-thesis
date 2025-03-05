@@ -12,6 +12,8 @@
         "max_steps" : 2000,
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb",
+        "stuck_threshold": 300,
+        "harsh": false,
         "cpu_cores": 5
     },
     "params": {

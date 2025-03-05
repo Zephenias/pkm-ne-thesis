@@ -13,6 +13,8 @@
         "action_freq": 24,
         "gb_path": "~/rom/PokemonRed.gb",
         "cpu_cores": 5,
+        "stuck_threshold": 30,
+        "harsh": true,
         "device": "cuda"
     },
     "params": {
@@ -22,13 +24,13 @@
         "interdim1" : 4000,
         "interdim2": 2000,
         "outdim" : 7,
-        "seed" : 42,
+        "seed" : 45,
         "use_sigma": true,
         "sigma_ub": 1,
         "sigma_lb": 0.1,
-        "generations": 2,
+        "generations": 200,
         "population_size": 15,
-        "selection_logic": 0
+        "selection_logic": 1
     }
 
 }

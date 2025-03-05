@@ -2,7 +2,7 @@
     "replay":
         {
         "model_path": "sav/CNN_elite_phenotype_gen1_f40.8_sigmaTrue.pth",
-        "json":"CNN_agent_state_gen9_f123.5_sigmaTrue.json"
+        "json":"/home/zephenias/ThesisGit/pkm-ne-thesis/ThesisCode/sav/zephenias-pc_full_CNN_agent_state_gen7_f66.3_sigmaTrue.json"
         }
     ,
     "environment":{
@@ -11,7 +11,9 @@
         "init_state": "~/rom/PokemonRed.gb.state",
         "max_steps" : 10000,
         "action_freq": 24,
-        "gb_path": "~/rom/PokemonRed.gb"
+        "gb_path": "~/rom/PokemonRed.gb",
+        "stuck_threshold": 30,
+        "harsh": true
     },
     "params": {
         "flat_size" : 5760,

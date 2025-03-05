@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
     env = RedGymEnv(environment)
     
-    with open (f'sav/{replay["json"]}', "r") as file:
+    with open (f'{replay["json"]}', "r") as file:
         model_state = json.load(file)
 
 
